@@ -66,7 +66,7 @@ var (
 	_ GraphNodeExecutable           = (*NodePlannableResourceInstance)(nil)
 )
 
-// GraphNodeEvalable
+// GraphNodeExecutable
 func (n *NodePlannableResourceInstance) Execute(ctx EvalContext, op walkOperation) tfdiags.Diagnostics {
 	addr := n.ResourceInstanceAddr()
 

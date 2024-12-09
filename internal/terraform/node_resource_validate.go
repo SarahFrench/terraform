@@ -44,7 +44,7 @@ func (n *NodeValidatableResource) Path() addrs.ModuleInstance {
 	return n.Addr.Module.UnkeyedInstanceShim()
 }
 
-// GraphNodeEvalable
+// GraphNodeExecutable
 func (n *NodeValidatableResource) Execute(ctx EvalContext, op walkOperation) (diags tfdiags.Diagnostics) {
 	// this is done first since there may not be config if we are generating it
 	diags = diags.Append(n.validateImportTargets(ctx))
