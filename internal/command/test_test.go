@@ -4,6 +4,7 @@
 package command
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -2323,65 +2324,78 @@ required.
 
 func TestTest_JUnitOutput(t *testing.T) {
 
-	// Setup test
-	td := t.TempDir()
-	testPath := path.Join("test", "junit-output-test-failure")
-	testCopyDir(t, testFixturePath(testPath), td)
-	defer testChdir(t, td)()
-
-	provider := testing_command.NewProvider(nil)
-	view, done := testView(t)
-
-	c := &TestCommand{
-		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(provider.Provider),
-			View:             view,
+	tcs := map[string]struct {
+		path         string
+		code         int
+		wantFilename string
+	}{
+		"can create XML for a single file with 1 pass, 1 fail": {
+			path:         "junit-output/1pass-1fail",
+			wantFilename: "expected-output.xml",
+			code:         1, // Test failure
+		},
+		"can create XML for multiple files with 1 pass each": {
+			path:         "junit-output/multiple-files",
+			wantFilename: "expected-output.xml",
+			code:         0,
+		},
+		"can display a test run's errors under the equivalent test case element": {
+			path:         "junit-output/missing-provider",
+			wantFilename: "expected-output.xml",
+			code:         1, // Test error
 		},
 	}
 
-	// Run command with -junit-xml=./output.xml flag
-	outputFile := "output.xml"
-	code := c.Run([]string{fmt.Sprintf("-junit-xml=./%s", outputFile), "-no-color"})
-	done(t)
+	for tn, tc := range tcs {
+		t.Run(tn, func(t *testing.T) {
+			// Setup test
+			td := t.TempDir()
+			testPath := path.Join("test", tc.path)
+			testCopyDir(t, testFixturePath(testPath), td)
+			defer testChdir(t, td)()
 
-	if code != 1 {
-		t.Errorf("expected status code 1 but got %d", code)
-	}
+			provider := testing_command.NewProvider(nil)
+			view, done := testView(t)
 
-	// Assert about contents of the JUnit XML file output
-	outputPath := fmt.Sprintf("%s/%s", td, outputFile)
-	actualOut, err := os.ReadFile(outputPath)
-	if err != nil {
-		t.Fatalf("error opening XML file: %s", err)
-	}
+			c := &TestCommand{
+				Meta: Meta{
+					testingOverrides: metaOverridesForProvider(provider.Provider),
+					View:             view,
+				},
+			}
 
-	durationRegexp := regexp.MustCompile(`time=\"[0-9\.]{10,}\"`)
-	actualOut = durationRegexp.ReplaceAll(actualOut, []byte("time=\"TIME_REDACTED\"")) // Time duration can vary; redact from data
+			// Run command with -junit-xml=./output.xml flag
+			outputFile := "output.xml"
+			code := c.Run([]string{fmt.Sprintf("-junit-xml=./%s", outputFile), "-no-color"})
+			done(t)
 
-	// Given the main.tf and main.tftest.hcl files in junit-output-test-failure/ test data referenced above
-	expectedOut := `<?xml version="1.0" encoding="UTF-8"?><testsuites>
-  <testsuite name="main.tftest.hcl" tests="2" skipped="0" failures="1" errors="0">
-    <testcase name="failing_assertion" classname="main.tftest.hcl" time="TIME_REDACTED">
-      <failure message="Test run failed"></failure>
-      <system-err><![CDATA[
-Error: Test assertion failed
+			// Assertions
+			if code != tc.code {
+				t.Errorf("expected status code %d but got %d", tc.code, code)
+			}
 
-  on main.tftest.hcl line 3:
-  (source code not available)
+			outputPath := fmt.Sprintf("%s/%s", td, outputFile)
+			actualOut, err := os.ReadFile(outputPath)
+			if err != nil {
+				t.Fatalf("error opening XML file: %s", err)
+			}
+			expectedOutputPath := fmt.Sprintf("%s/%s", td, tc.wantFilename)
+			expectedOutput, err := os.ReadFile(expectedOutputPath)
+			if err != nil {
+				t.Fatalf("error opening XML file: %s", err)
+			}
 
-local variable 'number' has a value greater than zero, so this assertion will
-fail
-]]></system-err>
-    </testcase>
-    <testcase name="passing_assertion" classname="main.tftest.hcl" time="TIME_REDACTED"></testcase>
-  </testsuite>
-</testsuites>`
+			// actual output will include test duration data, which isn't deterministic; redact it for comparison
+			durationRegexp := regexp.MustCompile(`time=\"[0-9\.]+\"`)
+			actualOut = durationRegexp.ReplaceAll(actualOut, []byte("time=\"TIME_REDACTED\""))
 
-	if string(actualOut) != expectedOut {
-		t.Fatalf("wanted XML:\n%s\n got XML:\n%s\n", expectedOut, string(actualOut))
-	}
+			if bytes.Compare(actualOut, expectedOutput) != 0 {
+				t.Fatalf("wanted XML:\n%s\n got XML:\n%s\n", string(expectedOutput), string(actualOut))
+			}
 
-	if provider.ResourceCount() > 0 {
-		t.Errorf("should have deleted all resources on completion but left %v", provider.ResourceString())
+			if provider.ResourceCount() > 0 {
+				t.Errorf("should have deleted all resources on completion but left %v", provider.ResourceString())
+			}
+		})
 	}
 }

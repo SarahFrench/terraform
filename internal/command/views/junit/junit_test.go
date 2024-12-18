@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform/internal/moduletest"
 )
 
-// See TestTestJUnitXMLFile_Conclusion for testing of JUnitXMLTestReport
+// See TestTest_JUnitOutput for indirect testing of JUnitXMLTestReport
 
 func Test_suiteFilesAsSortedList(t *testing.T) {
 	cases := map[string]struct {
