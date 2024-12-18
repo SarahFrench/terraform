@@ -757,6 +757,8 @@ func (t *TestJSON) TFCRetryHook(attemptNum int, resp *http.Response) {
 type TestJUnitXMLFile struct {
 	filename string
 	err      error
+
+	view *View
 }
 
 var _ Test = (*TestJUnitXMLFile)(nil)
@@ -768,9 +770,10 @@ var _ Test = (*TestJUnitXMLFile)(nil)
 // point of being asked to write a conclusion. Otherwise it will create the
 // file at that time. If creating or overwriting the file fails, a subsequent
 // call to method Err will return information about the problem.
-func NewTestJUnitXMLFile(filename string) *TestJUnitXMLFile {
+func NewTestJUnitXMLFile(filename string, view *View) *TestJUnitXMLFile {
 	return &TestJUnitXMLFile{
 		filename: filename,
+		view:     view,
 	}
 }
 
@@ -785,8 +788,12 @@ func (v *TestJUnitXMLFile) Err() error {
 
 func (v *TestJUnitXMLFile) Abstract(suite *moduletest.Suite) {}
 
+// TestJUnitXMLFile's Conclusion method does not just print out a summary of the tests
+// like the [Test] interface asks. Instead it prepares and saves to file an XML output
+// that includes all details about individual test pass/fail and any errors.
 func (v *TestJUnitXMLFile) Conclusion(suite *moduletest.Suite) {
-	xmlSrc, err := junit.JUnitXMLTestReport(suite)
+	sources := v.view.configSources()
+	xmlSrc, err := junit.JUnitXMLTestReport(suite, sources)
 	if err != nil {
 		v.err = err
 		return

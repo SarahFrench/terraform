@@ -38,7 +38,7 @@ type TestCase struct {
 	RunTime float64 `xml:"time,attr,omitempty"`
 }
 
-func JUnitXMLTestReport(suite *moduletest.Suite) ([]byte, error) {
+func JUnitXMLTestReport(suite *moduletest.Suite, sources map[string][]byte) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := xml.NewEncoder(&buf)
 	enc.EncodeToken(xml.ProcInst{
@@ -121,9 +121,7 @@ func JUnitXMLTestReport(suite *moduletest.Suite) ([]byte, error) {
 			case moduletest.Error:
 				var diagsStr strings.Builder
 				for _, diag := range run.Diagnostics {
-					// FIXME: Pass in the sources so that these diagnostics
-					// can include source snippets when appropriate.
-					diagsStr.WriteString(format.DiagnosticPlain(diag, nil, 80))
+					diagsStr.WriteString(format.DiagnosticPlain(diag, sources, 80))
 				}
 				testCase.Error = &WithMessage{
 					Message: "Encountered an error",
@@ -131,16 +129,14 @@ func JUnitXMLTestReport(suite *moduletest.Suite) ([]byte, error) {
 				}
 			}
 			if len(run.Diagnostics) != 0 && testCase.Error == nil {
-				// If we have diagnostics but the outcome wasn't an error
+				// If we have unprocessed diagnostics but the outcome wasn't an error
 				// then we're presumably holding diagnostics that didn't
 				// cause the test to error, such as warnings. We'll place
 				// those into the "system-err" element instead, so that
 				// they'll be reported _somewhere_ at least.
 				var diagsStr strings.Builder
 				for _, diag := range run.Diagnostics {
-					// FIXME: Pass in the sources so that these diagnostics
-					// can include source snippets when appropriate.
-					diagsStr.WriteString(format.DiagnosticPlain(diag, nil, 80))
+					diagsStr.WriteString(format.DiagnosticPlain(diag, sources, 80))
 				}
 				testCase.Stderr = &WithMessage{
 					Body: diagsStr.String(),

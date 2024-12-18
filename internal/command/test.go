@@ -120,7 +120,7 @@ func (c *TestCommand) Run(rawArgs []string) int {
 			"JUnit XML output is experimental",
 			"The -junit-xml option is currently experimental and therefore subject to breaking changes or removal, even in patch releases.",
 		))
-		junitXMLView = views.NewTestJUnitXMLFile(args.JUnitXMLFile)
+		junitXMLView = views.NewTestJUnitXMLFile(args.JUnitXMLFile, c.View)
 		view = views.TestMulti{
 			view,
 			junitXMLView,
