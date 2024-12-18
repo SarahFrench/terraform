@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform/internal/command/format"
 	"github.com/hashicorp/terraform/internal/moduletest"
+	"github.com/hashicorp/terraform/internal/tfdiags"
 )
 
 type WithMessage struct {
@@ -37,6 +38,10 @@ type TestCase struct {
 	// as zero anyway.)
 	RunTime float64 `xml:"time,attr,omitempty"`
 }
+
+var (
+	FailedTestSummary = "Test assertion failed"
+)
 
 func JUnitXMLTestReport(suite *moduletest.Suite, sources map[string][]byte) ([]byte, error) {
 	var buf bytes.Buffer
@@ -90,8 +95,16 @@ func JUnitXMLTestReport(suite *moduletest.Suite, sources map[string][]byte) ([]b
 		})
 
 		for _, run := range file.Runs {
-			// Each run is a "test case".
 
+			// By creating a map of diags we can delete them as they're used below
+			// This helps to identify diags that are only appropriate to include in
+			// the "system-err" element
+			diagsMap := make(map[int]tfdiags.Diagnostic, len(run.Diagnostics))
+			for i, diag := range run.Diagnostics {
+				diagsMap[i] = diag
+			}
+
+			// Each run is a "test case".
 			testCase := TestCase{
 				Name: run.Name,
 
@@ -112,31 +125,42 @@ func JUnitXMLTestReport(suite *moduletest.Suite, sources map[string][]byte) ([]b
 					// why the test was skipped?
 				}
 			case moduletest.Fail:
+				var diagsStr strings.Builder
+				for key, diag := range diagsMap {
+					// Select for diags resulting from failed assertions
+					if diag.Description().Summary == FailedTestSummary {
+						diagsStr.WriteString(format.DiagnosticPlain(diag, sources, 80))
+						delete(diagsMap, key)
+					}
+				}
 				testCase.Failure = &WithMessage{
 					Message: "Test run failed",
 					// FIXME: What's a useful thing to report in the body
 					// here? A summary of the statuses from all of the
 					// checkable objects in the configuration?
+					Body: diagsStr.String(),
 				}
 			case moduletest.Error:
 				var diagsStr strings.Builder
-				for _, diag := range run.Diagnostics {
+				for key, diag := range diagsMap {
 					diagsStr.WriteString(format.DiagnosticPlain(diag, sources, 80))
+					delete(diagsMap, key)
 				}
 				testCase.Error = &WithMessage{
 					Message: "Encountered an error",
 					Body:    diagsStr.String(),
 				}
 			}
-			if len(run.Diagnostics) != 0 && testCase.Error == nil {
+			if len(diagsMap) != 0 && testCase.Error == nil {
 				// If we have unprocessed diagnostics but the outcome wasn't an error
 				// then we're presumably holding diagnostics that didn't
 				// cause the test to error, such as warnings. We'll place
 				// those into the "system-err" element instead, so that
 				// they'll be reported _somewhere_ at least.
 				var diagsStr strings.Builder
-				for _, diag := range run.Diagnostics {
+				for key, diag := range diagsMap {
 					diagsStr.WriteString(format.DiagnosticPlain(diag, sources, 80))
+					delete(diagsMap, key)
 				}
 				testCase.Stderr = &WithMessage{
 					Body: diagsStr.String(),
