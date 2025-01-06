@@ -1,16 +1,63 @@
-package junit
+package views
 
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/terraform/internal/command/format"
 	"github.com/hashicorp/terraform/internal/moduletest"
 	"github.com/hashicorp/terraform/internal/tfdiags"
 )
+
+type Artifact interface {
+	PrepareAndSave(*moduletest.Suite) tfdiags.Diagnostics
+}
+
+type JUnitXMLFile struct {
+	filename string
+	xml      []byte
+
+	view *View
+}
+
+func NewJUnitXMLFile(filename string, view *View) Artifact {
+	return &JUnitXMLFile{
+		filename: filename,
+		view:     view,
+	}
+}
+
+func (v *JUnitXMLFile) PrepareAndSave(suite *moduletest.Suite) tfdiags.Diagnostics {
+	var diags tfdiags.Diagnostics
+	sources := v.view.configSources()
+	xmlSrc, err := JUnitXMLTestReport(suite, sources)
+	if err != nil {
+		diags = diags.Append(&hcl.Diagnostic{
+			Severity: hcl.DiagError,
+			Summary:  "error generating JUnit XML test output",
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+
+	err = os.WriteFile(v.filename, xmlSrc, 0660)
+	if err != nil {
+		diags = diags.Append(&hcl.Diagnostic{
+			Severity: hcl.DiagError,
+			Summary:  fmt.Sprintf("error saving JUnit XML to file %q", v.filename),
+			Detail:   err.Error(),
+		})
+		return diags
+	}
+
+	return nil
+}
 
 type WithMessage struct {
 	Message string `xml:"message,attr,omitempty"`

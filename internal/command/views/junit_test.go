@@ -1,4 +1,4 @@
-package junit
+package views
 
 import (
 	"testing"

@@ -21,7 +21,6 @@ import (
 	"github.com/hashicorp/terraform/internal/command/jsonprovider"
 	"github.com/hashicorp/terraform/internal/command/jsonstate"
 	"github.com/hashicorp/terraform/internal/command/views/json"
-	"github.com/hashicorp/terraform/internal/command/views/junit"
 	"github.com/hashicorp/terraform/internal/configs"
 	"github.com/hashicorp/terraform/internal/moduletest"
 	"github.com/hashicorp/terraform/internal/plans"
@@ -793,7 +792,7 @@ func (v *TestJUnitXMLFile) Abstract(suite *moduletest.Suite) {}
 // that includes all details about individual test pass/fail and any errors.
 func (v *TestJUnitXMLFile) Conclusion(suite *moduletest.Suite) {
 	sources := v.view.configSources()
-	xmlSrc, err := junit.JUnitXMLTestReport(suite, sources)
+	xmlSrc, err := JUnitXMLTestReport(suite, sources)
 	if err != nil {
 		v.err = err
 		return
