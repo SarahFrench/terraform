@@ -173,9 +173,9 @@ func (runner *TestSuiteRunner) Test() (moduletest.Status, tfdiags.Diagnostics) {
 	runner.View.Conclusion(suite)
 
 	if runner.Artifact != nil {
-		junitDiags := runner.Artifact.PrepareAndSave(suite)
-		diags = diags.Append(junitDiags)
-		if junitDiags.HasErrors() {
+		artifactDiags := runner.Artifact.PrepareAndSave(suite)
+		diags = diags.Append(artifactDiags)
+		if artifactDiags.HasErrors() {
 			return moduletest.Error, diags
 		}
 	}

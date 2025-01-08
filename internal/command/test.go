@@ -100,10 +100,6 @@ func (c *TestCommand) Run(rawArgs []string) int {
 	}
 
 	view := views.NewTest(args.ViewType, c.View)
-	var artifact views.Artifact
-	if args.JUnitXMLFile != "" {
-		artifact = views.NewJUnitXMLFile(args.JUnitXMLFile, c.View)
-	}
 
 	// The specified testing directory must be a relative path, and it must
 	// point to a directory that is a descendant of the configuration directory.
@@ -203,6 +199,13 @@ func (c *TestCommand) Run(rawArgs []string) int {
 			Streams:          c.Streams,
 		}
 	} else {
+
+		// Non remote test runs can save output to an artifact, created locally
+		var artifact views.Artifact
+		if args.JUnitXMLFile != "" {
+			artifact = views.NewJUnitXMLFile(args.JUnitXMLFile, c.View)
+		}
+
 		runner = &local.TestSuiteRunner{
 			Config: config,
 			// The GlobalVariables are loaded from the
