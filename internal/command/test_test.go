@@ -2422,8 +2422,8 @@ func TestTest_JUnitOutput_failureWriteFile(t *testing.T) {
 	done(t)
 
 	// Assertions
-	if code != 999 {
-		t.Errorf("expected status code %d but got %d", 999, code)
+	if code != 1 {
+		t.Errorf("expected status code %d but got %d", 1, code)
 	}
 
 }
