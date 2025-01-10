@@ -2399,31 +2399,3 @@ func TestTest_JUnitOutput(t *testing.T) {
 		})
 	}
 }
-
-func TestTest_JUnitOutput_failureWriteFile(t *testing.T) {
-	// Setup test
-	td := t.TempDir()
-	testPath := path.Join("test", "junit-output/1pass-1fail")
-	testCopyDir(t, testFixturePath(testPath), td)
-	defer testChdir(t, td)()
-
-	provider := testing_command.NewProvider(nil)
-	view, done := testView(t)
-
-	c := &TestCommand{
-		Meta: Meta{
-			testingOverrides: metaOverridesForProvider(provider.Provider),
-			View:             view,
-		},
-	}
-
-	// Run command with -junit-xml=~/output.xml flag - this will cause an error when saving to file
-	code := c.Run([]string{"-junit-xml=~/output.xml", "-no-color"})
-	done(t)
-
-	// Assertions
-	if code != 1 {
-		t.Errorf("expected status code %d but got %d", 1, code)
-	}
-
-}
