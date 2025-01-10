@@ -43,6 +43,15 @@ func NewJUnitXMLFile(filename string, configLoader *configload.Loader) Artifact 
 func (v *JUnitXMLFile) Save(suite *moduletest.Suite) tfdiags.Diagnostics {
 	var diags tfdiags.Diagnostics
 
+	if suite.Status == moduletest.Pending {
+		diags = diags.Append(&hcl.Diagnostic{
+			Severity: hcl.DiagError,
+			Summary:  "Cannot write test results from a pending test suite to JUnit XML output file",
+			Detail:   "Test suites must be completed before we can write its results to file, but a pending test suite was encountered. This is a bug in Terraform and should be reported.",
+		})
+		return diags
+	}
+
 	// Prepare XML content
 	sources := v.configLoader.Parser().Sources()
 	xmlSrc, err := JUnitXMLTestReport(suite, sources)
