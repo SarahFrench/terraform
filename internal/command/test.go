@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform/internal/backend/local"
 	"github.com/hashicorp/terraform/internal/cloud"
 	"github.com/hashicorp/terraform/internal/command/arguments"
+	"github.com/hashicorp/terraform/internal/command/artifact"
 	"github.com/hashicorp/terraform/internal/command/jsonformat"
 	"github.com/hashicorp/terraform/internal/command/views"
 	"github.com/hashicorp/terraform/internal/logging"
@@ -201,9 +202,9 @@ func (c *TestCommand) Run(rawArgs []string) int {
 	} else {
 
 		// Non remote test runs can save output to an artifact, created locally
-		var artifact views.Artifact
+		var junit artifact.Artifact
 		if args.JUnitXMLFile != "" {
-			artifact = views.NewJUnitXMLFile(args.JUnitXMLFile, c.configLoader)
+			junit = artifact.NewJUnitXMLFile(args.JUnitXMLFile, c.configLoader)
 		}
 
 		runner = &local.TestSuiteRunner{
@@ -217,7 +218,7 @@ func (c *TestCommand) Run(rawArgs []string) int {
 			TestingDirectory:    args.TestDirectory,
 			Opts:                opts,
 			View:                view,
-			Artifact:            artifact,
+			Artifact:            junit,
 			Stopped:             false,
 			Cancelled:           false,
 			StoppedCtx:          stopCtx,
