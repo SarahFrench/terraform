@@ -203,7 +203,7 @@ func (c *TestCommand) Run(rawArgs []string) int {
 		// Non remote test runs can save output to an artifact, created locally
 		var artifact views.Artifact
 		if args.JUnitXMLFile != "" {
-			artifact = views.NewJUnitXMLFile(args.JUnitXMLFile, c.View)
+			artifact = views.NewJUnitXMLFile(args.JUnitXMLFile, c.configLoader)
 		}
 
 		runner = &local.TestSuiteRunner{

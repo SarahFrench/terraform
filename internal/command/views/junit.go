@@ -14,6 +14,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/terraform/internal/command/format"
+	"github.com/hashicorp/terraform/internal/configs/configload"
 	"github.com/hashicorp/terraform/internal/moduletest"
 	"github.com/hashicorp/terraform/internal/tfdiags"
 )
@@ -26,19 +27,22 @@ type JUnitXMLFile struct {
 	filename string
 	xml      []byte
 
-	view *View
+	// A config loader is required to access sources, which are used with diagnostics to create XML content
+	configLoader *configload.Loader
 }
 
-func NewJUnitXMLFile(filename string, view *View) Artifact {
+func NewJUnitXMLFile(filename string, configLoader *configload.Loader) Artifact {
 	return &JUnitXMLFile{
-		filename: filename,
-		view:     view,
+		filename:     filename,
+		configLoader: configLoader,
 	}
 }
 
 func (v *JUnitXMLFile) PrepareAndSave(suite *moduletest.Suite) tfdiags.Diagnostics {
 	var diags tfdiags.Diagnostics
-	sources := v.view.configSources()
+
+	// Prepare XML content
+	sources := v.configLoader.Parser().Sources()
 	xmlSrc, err := JUnitXMLTestReport(suite, sources)
 	if err != nil {
 		diags = diags.Append(&hcl.Diagnostic{
@@ -49,6 +53,7 @@ func (v *JUnitXMLFile) PrepareAndSave(suite *moduletest.Suite) tfdiags.Diagnosti
 		return diags
 	}
 
+	// Save XML to the specified path
 	err = os.WriteFile(v.filename, xmlSrc, 0660)
 	if err != nil {
 		diags = diags.Append(&hcl.Diagnostic{
