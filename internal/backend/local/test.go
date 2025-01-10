@@ -173,7 +173,7 @@ func (runner *TestSuiteRunner) Test() (moduletest.Status, tfdiags.Diagnostics) {
 	runner.View.Conclusion(suite)
 
 	if runner.Artifact != nil {
-		artifactDiags := runner.Artifact.PrepareAndSave(suite)
+		artifactDiags := runner.Artifact.Save(suite)
 		diags = diags.Append(artifactDiags)
 		if artifactDiags.HasErrors() {
 			return moduletest.Error, diags

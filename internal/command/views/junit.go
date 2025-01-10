@@ -20,7 +20,7 @@ import (
 )
 
 type Artifact interface {
-	PrepareAndSave(*moduletest.Suite) tfdiags.Diagnostics
+	Save(*moduletest.Suite) tfdiags.Diagnostics
 }
 
 type JUnitXMLFile struct {
@@ -38,7 +38,9 @@ func NewJUnitXMLFile(filename string, configLoader *configload.Loader) Artifact 
 	}
 }
 
-func (v *JUnitXMLFile) PrepareAndSave(suite *moduletest.Suite) tfdiags.Diagnostics {
+// Save takes in a test suite, generates JUnit XML summarising the test results,
+// and saves the content to the filename specified by user
+func (v *JUnitXMLFile) Save(suite *moduletest.Suite) tfdiags.Diagnostics {
 	var diags tfdiags.Diagnostics
 
 	// Prepare XML content
@@ -54,7 +56,15 @@ func (v *JUnitXMLFile) PrepareAndSave(suite *moduletest.Suite) tfdiags.Diagnosti
 	}
 
 	// Save XML to the specified path
-	err = os.WriteFile(v.filename, xmlSrc, 0660)
+	saveDiags := v.save(xmlSrc)
+	diags = append(diags, saveDiags...)
+
+	return diags
+}
+
+func (v *JUnitXMLFile) save(xmlSrc []byte) tfdiags.Diagnostics {
+	var diags tfdiags.Diagnostics
+	err := os.WriteFile(v.filename, xmlSrc, 0660)
 	if err != nil {
 		diags = diags.Append(&hcl.Diagnostic{
 			Severity: hcl.DiagError,
