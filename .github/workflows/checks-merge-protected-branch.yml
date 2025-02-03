@@ -18,7 +18,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.sha }}
+  group: foobar
   cancel-in-progress: true
 
 jobs:
