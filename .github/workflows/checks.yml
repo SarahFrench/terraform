@@ -25,6 +25,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: foobar
+  cancel-in-progress: true
+
 jobs:
   unit-tests:
     name: "Unit Tests"

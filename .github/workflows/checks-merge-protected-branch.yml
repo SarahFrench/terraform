@@ -17,10 +17,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: foobar
-  cancel-in-progress: true
-
 jobs:
  quick-checks:
   uses: ./.github/workflows/checks.yml
