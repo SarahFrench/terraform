@@ -92,6 +92,7 @@ jobs:
                             repo: context.repo.repo,
                             labels: [noChangeLogLabel]
                         });
+                        console.log(resp)
                         if (resp.status != "200") {
                             console.log(resp)
                             return
