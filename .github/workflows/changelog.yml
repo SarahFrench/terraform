@@ -14,7 +14,6 @@ on:
             - ready_for_review
             - reopened
             - synchronize
-            - edited
             - labeled
             - unlabeled
 
@@ -40,8 +39,8 @@ jobs:
               with:
                 script: |
                     // Case sensitivity issue for [X] or [x], so downcase everything
-                    const emptyNoChangelogCheckmark = "- [ ] This change is not user-facing.".toLowerCase()
-                    const checkedNoChangelogCheckmark = "- [x] This change is not user-facing.".toLowerCase()
+                    const emptyCheckmark = "- [ ] This change is not user-facing.".toLowerCase()
+                    const checkedCheckmark = "- [x] This change is not user-facing.".toLowerCase()
 
                     const issueResp = await github.rest.issues.get({
                         issue_number: context.issue.number,
@@ -54,11 +53,11 @@ jobs:
                     }
                     let body = issueResp.data.body
                     body = body.toLowerCase()
-                    const hasEmptyCheckMark = body.includes(emptyNoChangelogCheckmark)
-                    const hasCheckedCheckMark = body.includes(checkedNoChangelogCheckmark)
+                    const userFacing = body.includes(emptyCheckmark)
+                    const notUserFacing = body.includes(checkedCheckmark)
 
-                    if ((hasEmptyCheckMark && hasCheckedCheckMark) || ( !hasEmptyCheckMark && !hasCheckedCheckMark)) {
-                        // The template is either not in use, or it's been duplicated.
+                    if ((userFacing && notUserFacing) || ( !userFacing && !notUserFacing)) {
+                        // The template is either not in use, or it's being used weirdly.
                         // In this case leave things alone.
                         console.log("PR body doesn't have expected content; not inferring anything about labels.")
                         return
@@ -76,12 +75,14 @@ jobs:
                     }
                     const labelPresent = labelsResp.data.includes(noChangeLogLabel)
 
-                    if ((hasEmptyCheckMark && !labelPresent) || (hasCheckedCheckMark && labelPresent)) {
+                    if ((userFacing && !labelPresent) || (notUserFacing && labelPresent)) {
                         console.log("PR labels and PR body match")
+                        console.log("\tIs label present? : " + labelPresent)
+                        console.log("\tDoes PR body say it's not user facing? : " + notUserFacing)
                         return
                     }
 
-                    if (hasEmptyCheckMark && labelPresent) {
+                    if (userFacing && labelPresent) {
                         // The 'no-changelog-needed' label is added but the issue body
                         // doesn't indicate the change isn't user-facing.
                         console.log("'no-changelog-needed' label present but PR body doesn't match")
@@ -90,7 +91,7 @@ jobs:
                         // Updating the issue body feels more correct.
                     }
 
-                    if (hasCheckedCheckMark && !labelPresent) {
+                    if (notUserFacing && !labelPresent) {
                         // The 'no-changelog-needed' label is missing
                         // but the issue body indicates the change isn't user-facing.
                         // The label should be present!
