@@ -47,6 +47,7 @@ jobs:
                         owner: context.repo.owner,
                         repo: context.repo.repo
                     })
+                    console.debug(issueResp)
                     if (issueResp.status != 200) {
                         console.error(issueResp)
                         return
@@ -73,11 +74,11 @@ jobs:
                         console.error(labelsResp)
                         return
                     }
-                    const labelPresent = labelsResp.data.includes(noChangeLogLabel)
+                    const labelPresent = labelsResp.data.some(label => label.name == noChangeLogLabel);
 
                     if ((userFacing && !labelPresent) || (notUserFacing && labelPresent)) {
                         console.log("PR labels and PR body match")
-                        console.log("\tIs label present? : " + labelPresent)
+                        console.log("\tIs " + noChangeLogLabel + " label present? : " + labelPresent)
                         console.log("\tDoes PR body say it's not user facing? : " + notUserFacing)
                         return
                     }
@@ -104,7 +105,7 @@ jobs:
                             repo: context.repo.repo,
                             labels: [noChangeLogLabel]
                         });
-                        console.log(resp)
+                        console.debug(resp)
                         if (resp.status != 200) {
                             console.error(resp)
                             return
