@@ -42,12 +42,6 @@ jobs:
                     const emptyNoChangelogCheckmark = "- [ ] This change is not user-facing.".toLowerCase()
                     const checkedNoChangelogCheckmark = "- [x] This change is not user-facing.".toLowerCase()
 
-                    console.log("context.payload")
-                    console.log(context.payload)
-                    console.log("context.payload.pull_request")
-                    console.log(context.payload.pull_request)
-                    console.log("context.payload.pull_request.body")
-                    console.log(context.payload.pull_request.body)
                     let body = context.payload.pull_request.body
                     body = body.toLowerCase()
                     const hasEmptyCheckMark = body.includes(emptyNoChangelogCheckmark)
@@ -60,12 +54,12 @@ jobs:
                     }
 
                     const noChangeLogLabel = 'no-changelog-needed'
-                    const prLabels = await github.rest.issues.listLabelsOnIssue({
+                    const labelsResp = await github.rest.issues.listLabelsOnIssue({
                         issue_number: context.issue.number,
                         owner: context.repo.owner,
                         repo: context.repo.repo
                     });
-                    const labelPresent = prLabels.includes(noChangeLogLabel)
+                    const labelPresent = labelsResp.data.includes(noChangeLogLabel)
 
                     if ((hasEmptyCheckMark && !labelPresent) || (hasCheckedCheckMark && labelPresent)) {
                         // Labelling and issue body match
