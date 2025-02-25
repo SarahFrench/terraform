@@ -59,6 +59,10 @@ jobs:
                         owner: context.repo.owner,
                         repo: context.repo.repo
                     });
+                    if labelsResp.status != "200" {
+                        console.log(labelsResp)
+                        return
+                    }
                     const labelPresent = labelsResp.data.includes(noChangeLogLabel)
 
                     if ((hasEmptyCheckMark && !labelPresent) || (hasCheckedCheckMark && labelPresent)) {
@@ -79,12 +83,16 @@ jobs:
                         // but the issue body indicates the change isn't user-facing.
                         // The label should be present!
 
-                        const result = await github.rest.issues.addLabels({
+                        const resp = await github.rest.issues.addLabels({
                             issue_number: context.issue.number,
                             owner: context.repo.owner,
                             repo: context.repo.repo,
                             labels: [noChangeLogLabel]
                         });
+                        if resp.status != "200" {
+                            console.log(resp)
+                            return
+                        }
                     }
 
 
