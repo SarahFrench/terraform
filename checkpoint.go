@@ -19,7 +19,7 @@ func init() {
 	checkpointResult = make(chan *checkpoint.CheckResponse, 1)
 }
 
-var checkpointResult chan *checkpoint.CheckResponse
+var checkpointResult chan *checkpoint.CheckResponse //edit
 
 // runCheckpoint runs a HashiCorp Checkpoint request. You can read about
 // Checkpoint here: https://github.com/hashicorp/go-checkpoint.
