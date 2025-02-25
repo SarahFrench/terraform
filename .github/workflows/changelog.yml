@@ -51,7 +51,7 @@ jobs:
                     const hasEmptyCheckMark = body.includes(emptyNoChangelogCheckmark)
                     const hasCheckedCheckMark = body.includes(checkedNoChangelogCheckmark)
 
-                    if (hasEmptyCheckMark && hasCheckedCheckMark) || ( !hasEmptyCheckMark && !hasCheckedCheckMark) {
+                    if ((hasEmptyCheckMark && hasCheckedCheckMark) || ( !hasEmptyCheckMark && !hasCheckedCheckMark)) {
                         // The template is either not in use, or it's been duplicated.
                         // In this case leave things alone.
                         return
@@ -65,12 +65,12 @@ jobs:
                     });
                     const labelPresent = prLabels.includes(noChangeLogLabel)
 
-                    if (hasEmptyCheckMark && !labelPresent) || (hasCheckedCheckMark && labelPresent) {
+                    if ((hasEmptyCheckMark && !labelPresent) || (hasCheckedCheckMark && labelPresent)) {
                         // Labelling and issue body match
                         return
                     }
 
-                    if hasEmptyCheckMark && labelPresent {
+                    if (hasEmptyCheckMark && labelPresent) {
                         // The 'no-changelog-needed' label is added but the issue body
                         // doesn't indicate the change isn't user-facing.
 
@@ -78,7 +78,7 @@ jobs:
                         // Updating the issue body feels more correct.
                     }
 
-                    if hasCheckedCheckMark && !labelPresent {
+                    if (hasCheckedCheckMark && !labelPresent) {
                         // The 'no-changelog-needed' label is missing
                         // but the issue body indicates the change isn't user-facing.
                         // The label should be present!
