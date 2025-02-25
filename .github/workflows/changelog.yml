@@ -60,6 +60,7 @@ jobs:
                     if ((hasEmptyCheckMark && hasCheckedCheckMark) || ( !hasEmptyCheckMark && !hasCheckedCheckMark)) {
                         // The template is either not in use, or it's been duplicated.
                         // In this case leave things alone.
+                        console.log("PR body doesn't have expected content; not inferring anything about labels.")
                         return
                     }
 
