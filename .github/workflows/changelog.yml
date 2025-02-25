@@ -42,12 +42,16 @@ jobs:
                     const emptyNoChangelogCheckmark = "- [ ] This change is not user-facing.".toLowerCase()
                     const checkedNoChangelogCheckmark = "- [x] This change is not user-facing.".toLowerCase()
 
-                    const { body } = await github.rest.issues.get({
+                    console.log("context")
+                    console.log(context)
+                    const issue = await github.rest.issues.get({
                         issue_number: context.issue.number,
                         owner: context.repo.owner,
                         repo: context.repo.repo
                     })
-                    body = body.toLowerCase()
+                    console.log("issue")
+                    console.log(issue)
+                    body = issue.body.toLowerCase()
                     const hasEmptyCheckMark = body.includes(emptyNoChangelogCheckmark)
                     const hasCheckedCheckMark = body.includes(checkedNoChangelogCheckmark)
 
