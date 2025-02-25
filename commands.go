@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/cli"
 	"github.com/hashicorp/go-plugin"
 	svchost "github.com/hashicorp/terraform-svchost"
-	"github.com/hashicorp/terraform-svchost/auth"
+	"github.com/hashicorp/terraform-svchost/auth" //edit
 	"github.com/hashicorp/terraform-svchost/disco"
 
 	"github.com/hashicorp/terraform/internal/addrs"
