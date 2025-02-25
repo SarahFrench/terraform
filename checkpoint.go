@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"path/filepath" //edit
+	"path/filepath" //edit 2
 
 	"github.com/hashicorp/go-checkpoint"
 	"github.com/hashicorp/terraform/internal/command"
