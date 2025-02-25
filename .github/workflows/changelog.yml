@@ -59,7 +59,7 @@ jobs:
                         owner: context.repo.owner,
                         repo: context.repo.repo
                     });
-                    if labelsResp.status != "200" {
+                    if (labelsResp.status != "200") {
                         console.log(labelsResp)
                         return
                     }
@@ -89,7 +89,7 @@ jobs:
                             repo: context.repo.repo,
                             labels: [noChangeLogLabel]
                         });
-                        if resp.status != "200" {
+                        if (resp.status != "200") {
                             console.log(resp)
                             return
                         }
