@@ -66,13 +66,14 @@ jobs:
                     const labelPresent = labelsResp.data.includes(noChangeLogLabel)
 
                     if ((hasEmptyCheckMark && !labelPresent) || (hasCheckedCheckMark && labelPresent)) {
-                        // Labelling and issue body match
+                        console.log("PR labels and PR body match")
                         return
                     }
 
                     if (hasEmptyCheckMark && labelPresent) {
                         // The 'no-changelog-needed' label is added but the issue body
                         // doesn't indicate the change isn't user-facing.
+                        console.log("'no-changelog-needed' label present but PR body doesn't match")
 
                         // TODO: Do we update the issue body to match the label, or remove the label?
                         // Updating the issue body feels more correct.
@@ -83,6 +84,8 @@ jobs:
                         // but the issue body indicates the change isn't user-facing.
                         // The label should be present!
 
+                        console.log("PR body suggests 'no-changelog-needed' label should be present")
+                        console.log("Adding 'no-changelog-needed' label...")
                         const resp = await github.rest.issues.addLabels({
                             issue_number: context.issue.number,
                             owner: context.repo.owner,
