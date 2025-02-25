@@ -42,7 +42,7 @@ jobs:
                     const emptyNoChangelogCheckmark = "- [ ] This change is not user-facing.".toLowerCase()
                     const checkedNoChangelogCheckmark = "- [x] This change is not user-facing.".toLowerCase()
 
-                    body = context.body.toLowerCase()
+                    body = context.payload.pull_request.body.toLowerCase()
                     const hasEmptyCheckMark = body.includes(emptyNoChangelogCheckmark)
                     const hasCheckedCheckMark = body.includes(checkedNoChangelogCheckmark)
 
