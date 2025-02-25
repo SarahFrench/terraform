@@ -47,11 +47,11 @@ jobs:
                         owner: context.repo.owner,
                         repo: context.repo.repo
                     })
-                    console.debug(issueResp)
                     if (issueResp.status != 200) {
                         console.error(issueResp)
                         return
                     }
+
                     let body = issueResp.data.body
                     body = body.toLowerCase()
                     const userFacing = body.includes(emptyCheckmark)
@@ -105,7 +105,6 @@ jobs:
                             repo: context.repo.repo,
                             labels: [noChangeLogLabel]
                         });
-                        console.debug(resp)
                         if (resp.status != 200) {
                             console.error(resp)
                             return
