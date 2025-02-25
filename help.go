@@ -16,7 +16,7 @@ import (
 // helpFunc is a cli.HelpFunc that can be used to output the help CLI instructions for Terraform.
 func helpFunc(commands map[string]cli.CommandFactory) string {
 	// Determine the maximum key length, and classify based on type
-	var otherCommands []string
+	var otherCommands []string // edit
 	maxKeyLen := 0
 
 	for key := range commands {
