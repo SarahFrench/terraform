@@ -71,7 +71,7 @@ jobs:
               with:
                   script: |
                     console.log(${{github.ref}})
-                    console.log("\n and \n"))
+                    console.log("\n and \n")
                     console.log(${{github}})
 
             - name: "Check for changelog entry when merging into main"
