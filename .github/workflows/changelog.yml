@@ -6,6 +6,15 @@
 name: Changelog
 
 on:
+    workflow_dispatch:
+    pull_request:
+        types:
+            - opened
+            - ready_for_review
+            - reopened
+            - synchronize
+            - labeled
+            - unlabeled
     # The pull_request_target trigger event allows PRs raised from forks to have write permissions and access secrets.
     # We uses it in this workflow to enable writing comments to the PR.
     pull_request_target:
