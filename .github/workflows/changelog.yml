@@ -66,7 +66,7 @@ jobs:
                   ref: ${{ github.ref }} # Ref refers to the target branch of this PR
 
             - name: "Check for changelog entry when merging into release branch"
-              if: ${{github.ref != 'refs/heads/main'}}
+              if: ${{github.base_ref != 'refs/heads/main'}}
               uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
               with:
                   script: |
@@ -76,7 +76,7 @@ jobs:
                     console.log(x)
 
             - name: "Check for changelog entry when merging into main"
-              if: ${{github.ref == 'refs/heads/main'}}
+              if: ${{github.base_ref == 'refs/heads/main'}}
               uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
               with:
                   script: |
