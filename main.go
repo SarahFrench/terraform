@@ -3,6 +3,8 @@
 
 package main
 
+// kill me
+
 import (
 	"context"
 	"fmt"
